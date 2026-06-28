@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block title %}AI Generator – Freelance Studio AI{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <span class="section-eyebrow">Powered by Claude</span>
+    <h1>AI Description Generator</h1>
+    <p>Enter your project details and get a professional description in seconds.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="ai-layout">
+
+      <!-- Input panel -->
+      <div class="ai-input-panel form-card">
+        <h3 class="panel-heading">Project Details</h3>
+
+        <div class="form-group">
+          <label for="ai-title">Project Title <span class="req">*</span></label>
+          <input type="text" id="ai-title" placeholder="e.g. Portfolio Website for a Photographer" />
+        </div>
+
+        <div class="form-group">
+          <label for="ai-category">Category <span class="req">*</span></label>
+          <select id="ai-category">
+            <option value="">Select a category</option>
+            {% for cat in categories %}
+            <option value="{{ cat }}">{{ cat }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="ai-features">Key Features / Tech Stack</label>
+          <textarea id="ai-features" rows="4"
+            placeholder="e.g. React, Node.js, Stripe integration, Admin dashboard, Dark mode…"></textarea>
+        </div>
+
+        <button class="btn btn-primary btn-full" id="generateBtn">
+          <span id="btnText">✦ Generate Description</span>
+          <span id="btnLoader" style="display:none;">Generating…</span>
+        </button>
+      </div>
+
+      <!-- Output panel -->
+      <div class="ai-output-panel">
+        <div class="output-card" id="outputCard">
+          <div class="output-placeholder" id="outputPlaceholder">
+            <div class="placeholder-icon">🤖</div>
+            <p>Your AI-generated description will appear here.</p>
+          </div>
+          <div class="output-result" id="outputResult" style="display:none;">
+            <div class="output-header">
+              <span class="output-badge">✦ Claude Generated</span>
+              <button class="copy-btn" id="copyBtn" title="Copy to clipboard">Copy</button>
+            </div>
+            <p id="outputText"></p>
+            <div class="output-actions">
+              <a href="{{ url_for('project.add_project') }}" class="btn btn-primary btn-sm">Use in Project →</a>
+              <button class="btn btn-ghost btn-sm" id="regenerateBtn">Regenerate</button>
+            </div>
+          </div>
+          <div class="output-error" id="outputError" style="display:none;">
+            <span class="error-icon">⚠️</span>
+            <p id="errorText"></p>
+          </div>
+        </div>
+
+        <!-- Tips -->
+        <div class="ai-tips">
+          <h4>💡 Tips for Better Results</h4>
+          <ul>
+            <li>Include the tech stack for more specific descriptions</li>
+            <li>Mention special features like animations or integrations</li>
+            <li>Copy the result and paste it in Add Project</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const generateBtn    = document.getElementById('generateBtn');
+const btnText        = document.getElementById('btnText');
+const btnLoader      = document.getElementById('btnLoader');
+const outputPlaceholder = document.getElementById('outputPlaceholder');
+const outputResult   = document.getElementById('outputResult');
+const outputError    = document.getElementById('outputError');
+const outputText     = document.getElementById('outputText');
+const errorText      = document.getElementById('errorText');
+const copyBtn        = document.getElementById('copyBtn');
+const regenerateBtn  = document.getElementById('regenerateBtn');
+
+async function generate() {
+  const title    = document.getElementById('ai-title').value.trim();
+  const category = document.getElementById('ai-category').value;
+  const features = document.getElementById('ai-features').value.trim();
+
+  if (!title || !category) {
+    alert('Please enter a title and select a category.');
+    return;
+  }
+
+  // Loading state
+  generateBtn.disabled = true;
+  btnText.style.display  = 'none';
+  btnLoader.style.display = 'inline';
+  outputPlaceholder.style.display = 'none';
+  outputResult.style.display  = 'none';
+  outputError.style.display   = 'none';
+
+  try {
+    const res = await fetch('/api/generate-description', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, category, features }),
+    });
+    const data = await res.json();
+
+    if (data.error) {
+      errorText.textContent = data.error;
+      outputError.style.display = 'block';
+    } else {
+      outputText.textContent = data.description;
+      outputResult.style.display = 'block';
+    }
+  } catch (err) {
+    errorText.textContent = 'Network error. Please try again.';
+    outputError.style.display = 'block';
+  } finally {
+    generateBtn.disabled = false;
+    btnText.style.display  = 'inline';
+    btnLoader.style.display = 'none';
+  }
+}
+
+generateBtn.addEventListener('click', generate);
+regenerateBtn.addEventListener('click', generate);
+
+copyBtn.addEventListener('click', () => {
+  navigator.clipboard.writeText(outputText.textContent).then(() => {
+    copyBtn.textContent = 'Copied!';
+    setTimeout(() => (copyBtn.textContent = 'Copy'), 2000);
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}{% if project %}Edit{% else %}Add{% endif %} Project – Freelance Studio AI{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <span class="section-eyebrow">Portfolio</span>
+    <h1>{% if project %}Edit Project{% else %}Add New Project{% endif %}</h1>
+    <p>{% if project %}Update the details below.{% else %}Fill in the details to showcase your work.{% endif %}</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container container--narrow">
+    <div class="form-card">
+      <form action="{% if project %}{{ url_for('project.edit_project', project_id=project.id) }}{% else %}{{ url_for('project.add_project') }}{% endif %}"
+            method="POST" enctype="multipart/form-data" class="project-form">
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="title">Project Title <span class="req">*</span></label>
+            <input type="text" id="title" name="title" placeholder="e.g. E-Commerce Website for Fashion Brand"
+                   value="{{ project.title if project else '' }}" required />
+          </div>
+          <div class="form-group">
+            <label for="category">Category <span class="req">*</span></label>
+            <select id="category" name="category" required>
+              <option value="">Select a category</option>
+              {% for cat in ['Web Development','Mobile App','UI/UX Design','Logo & Branding','SEO & Marketing','E-Commerce','Data Analytics','WordPress','Video Editing','Content Writing'] %}
+              <option value="{{ cat }}" {% if project and project.category == cat %}selected{% endif %}>{{ cat }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="budget">Budget (₹) <span class="req">*</span></label>
+            <input type="number" id="budget" name="budget" placeholder="e.g. 8000" min="0" step="100"
+                   value="{{ project.budget if project else '' }}" required />
+          </div>
+          <div class="form-group">
+            <label for="delivery_days">Delivery (Days) <span class="req">*</span></label>
+            <input type="number" id="delivery_days" name="delivery_days" placeholder="e.g. 5" min="1"
+                   value="{{ project.delivery_days if project else '' }}" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Project Description</label>
+          <textarea id="description" name="description" rows="5"
+                    placeholder="Describe what you built, the tech stack used, and the value delivered…">{{ project.description if project else '' }}</textarea>
+          <div class="form-hint">
+            Tip: Use the <a href="{{ url_for('ai.ai_generator') }}">AI Generator</a> to craft a professional description.
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="image">Project Image</label>
+          <div class="file-upload" id="fileUpload">
+            <input type="file" id="image" name="image" accept="image/*" class="file-input" />
+            <div class="file-label">
+              <span class="file-icon">📎</span>
+              <span class="file-text">Click to upload or drag &amp; drop</span>
+              <span class="file-sub">PNG, JPG, WEBP up to 5 MB</span>
+            </div>
+            <div class="file-preview" id="filePreview" style="display:none;">
+              <img id="previewImg" src="" alt="Preview" />
+              <button type="button" class="file-remove" id="fileRemove">✕ Remove</button>
+            </div>
+          </div>
+          {% if project and project.image %}
+          <div class="current-image">
+            <span>Current: </span>
+            <img src="{{ url_for('static', filename=project.image) }}" alt="current" style="height:48px;border-radius:6px;vertical-align:middle;" />
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="form-actions">
+          <a href="{{ url_for('project.projects') }}" class="btn btn-ghost">Cancel</a>
+          <button type="submit" class="btn btn-primary">
+            {% if project %}Save Changes{% else %}Add Project{% endif %}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const input   = document.getElementById('image');
+const preview = document.getElementById('filePreview');
+const previewImg = document.getElementById('previewImg');
+const removeBtn  = document.getElementById('fileRemove');
+const fileLabel  = document.querySelector('.file-label');
+
+input.addEventListener('change', () => {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    previewImg.src = e.target.result;
+    preview.style.display = 'flex';
+    fileLabel.style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+});
+
+removeBtn.addEventListener('click', () => {
+  input.value = '';
+  preview.style.display = 'none';
+  fileLabel.style.display = 'flex';
+});
+</script>
+{% endblock %}
