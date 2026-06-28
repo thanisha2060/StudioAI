@@ -156,38 +156,6 @@ python app.py
 
 ---
 
-# 📸 Application Screenshots
-
-### 🏠 Home Page
-
-
-
-
----
-
-### 🤖 AI Description Generator
-
-(Add Screenshot)
-
----
-
-### ➕ Add Project
-
-(Add Screenshot)
-
----
-
-### 📂 Projects Page
-
-(Add Screenshot)
-
----
-
-### 📞 Contact Page
-
-(Add Screenshot)
-
----
 
 # 🎯 Future Enhancements
 
